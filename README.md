@@ -4,10 +4,10 @@ Piccolo AI is the open-source version of [SensiML Analytics Studio](https://sens
 
 The Piccolo AI project includes
 
-* SensiML's ML Engine: The engine behind SensiML’s AutoML model building, sensor data management, model tracking, and embedded firmware generation 
-* Embedded ML SDK: SensiML's Inferencing and DSP SDK designed for building and running DSP & ML pipelines on edge devices
-* Analytic Studio UI: An Intuitive web interface for working with the SensiML ML Engine to build TinyML applications
-* SensiML Python Client: Allows programmatic access to the REST API services through Jupyter Notebooks
+* **SensiML's ML Engine**: The engine behind SensiML’s AutoML model building, sensor data management, model tracking, and embedded firmware generation 
+* **Embedded ML SDK**: SensiML's Inferencing and DSP SDK designed for building and running DSP & ML pipelines on edge devices
+* **Analytic Studio UI**: An Intuitive web interface for working with the SensiML ML Engine to build TinyML applications
+* **SensiML Python Client**: Allows programmatic access to the REST API services through Jupyter Notebooks
 
 Piccolo AI is currently optimized for the classification of time-series sensor data. Common use cases enabled by Piccolo AI include:
 
@@ -48,13 +48,19 @@ To try out Piccolo AI on your machine, we recommend using Docker.
    sudo chmod 666 /var/run/docker.sock
    ```
 
-5. By default the repository does not include docker images to generate model/compiler code for devices. You must pull docker images for the compilers you want to use. See docker images:
+5. By default the repository does not include docker images to generate model/compiler code for devices. You'll need to pull docker images for the compilers you want to use. See docker images:
   
    ```
    docker pull sensiml/sml_x86_generic:9.3.0-v1.0
    docker pull sensiml/sml_armgcc_generic:10.3.1-v1.0
    docker pull sensiml/sml_x86mingw_generic:9.3-v1.0
    docker pull sensiml/sensiml_tensorflow:0a4bec2a-v4.0
+   ```
+   
+6. Make sure you have the latest sensiml base docker image version. If not, you can do a docker pull
+
+   ```
+   docker pull sensiml/base
    ```
 
 ### Start Piccolo AI
@@ -63,25 +69,18 @@ To try out Piccolo AI on your machine, we recommend using Docker.
 
 2. Open a Ubuntu terminal through Windows Subsystem for Linux
 
-3. Navigate to your piccolo directory
-
    ```
-   cd /mnt/c/Users/my_user/Documents/Repos/piccolo
-   ```
-
-4. Run docker compose
-
-   ```
-   docker-compose up
+   git clone https://github.com/sensiml/piccolo
+   cd piccolo
    ```
 
-   Note: You should have the latest version of the sensiml base docker image. If not, you can do a docker pull
+3. Use [docker compose](https://docs.docker.com/compose/) to start the services
 
    ```
-   docker pull sensiml/base
+   docker compose up
    ```
 
-**Login via the Piccolo UI**
+**Login via the Web UI Interface**
 
 Go to your browser at `http://localhost:8000` to log in to the UI. See the [Getting Started Guide](https://sensiml.com/documentation/guides/getting-started/overview.html) to get started. 
 
@@ -103,7 +102,7 @@ Upgrades will need to check out the latest code and run database.intialize conta
 
 ## Documentation
 
-Piccolo AI is the open-source version of SensiML Analytics Studio. As such, it's features and capabilities align with the majority of those found in SensiML's Analytics Studio for which documentation can be found
+Piccolo AI is the open-source version of SensiML ML Engine. As such, it's features and capabilities align with the majority of those found in SensiML's ML Egninge for which documentation can be found
 [here](https://sensiml.com/documentation/analytics-studio/index.html).
 
 For more information about our documentation processes or to build them yourself, see the
