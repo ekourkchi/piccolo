@@ -41,8 +41,11 @@ import ModelControlPanel from "components/ModelControlPanel";
 
 import { AppLoader } from "components/UILoaders";
 
-import TargetDeviceOptions from "./components/TargetDeviceOptions";
+import { useMainContext, useReadFileText } from "hooks";
 
+import infoFile from "i18n/locales/en/info-model-download.md";
+
+import TargetDeviceOptions from "./components/TargetDeviceOptions";
 import InfoClassOptions from "./components/InfoClassOptions";
 import InfoCaptureConfiguration from "./components/InfoCaptureConfiguration";
 import InfoApplication from "./components/InfoApplication";
@@ -99,6 +102,9 @@ const DownloadModel = ({
   const [downloadingCode, setDownloadingCode] = useState(0);
   const [snackBarMessage, setSnackBarMessage] = useState(null);
   const [snackBarVariant, setSnackBarVariant] = useState("success");
+
+  const { showInformationWindow } = useMainContext();
+  const screenInfoMd = useReadFileText(infoFile);
 
   const showMessage = (variant, message) => {
     setSnackBarVariant(variant);
@@ -247,14 +253,14 @@ const DownloadModel = ({
         },
       );
       if (response && response.error) {
-        setDownloadingMassageFailed(t("download.error-dowload-w-err", { error: response.error }));
+        setDownloadingMassageFailed(t("download.error-download-w-err", { error: response.error }));
         setDownloadingCode(response?.code);
         stopDownloadStatusCheck();
       } else {
         startDownloadStatusCheck();
       }
     } catch (error) {
-      setDownloadingMassageFailed(t("download.error-dowload-failed"));
+      setDownloadingMassageFailed(t("download.error-download-failed"));
       setDownloadingCode(500);
       stopDownloadStatusCheck();
     }
@@ -274,14 +280,14 @@ const DownloadModel = ({
       fileDownload(response.data, response.filename);
       stopDownloadStatusCheck();
       setCompleted(100);
-      showMessage("success", t("download.success-dowload", { filename: response.filename }));
+      showMessage("success", t("download.success-download", { filename: response.filename }));
       setDownloadingCode(response?.code);
       stopDownloadStatusCheck();
     } else if (response.status === CANCELED) {
       setDownloadingCode(response?.code);
       stopDownloadStatusCheck();
     } else if (response.error) {
-      setDownloadingMassageFailed(t("download.error-dowload-w-err", { error: response.error }));
+      setDownloadingMassageFailed(t("download.error-download-w-err", { error: response.error }));
       setDownloadingCode(response?.code);
       stopDownloadStatusCheck();
     } else {
@@ -309,6 +315,7 @@ const DownloadModel = ({
               onChangePlatform={() =>
                 targetDeviceOptionsdRef.current.handleDeleteSelectedPlatform()
               }
+              onShowInformation={() => showInformationWindow("Downloading Model", screenInfoMd)}
               downloading={downloading}
               handleDownloadRequest={handleDownloadRequest}
             />

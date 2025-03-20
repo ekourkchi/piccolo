@@ -46,6 +46,7 @@ env = environ.Env(
     ENVIRONMENT=(str, ""),
     SECRET_KEY=(str, "asdf"),
     ALLOWED_HOSTS=(str, "localhost"),
+    SERVER_NAME=(str, "sensiml"),
     DEBUG=(bool, False),
     EMAIL_FROM_ADDRESS=(str, "info@sensiml.com"),
     HOSTNAME=(str, "localhost"),
@@ -158,7 +159,7 @@ env = environ.Env(
     CELERY_RDB_PORT=(int, 6899),
     DOCKER_HOST_SML_DATA_DIR=(str, ""),
     INSIDE_LOCAL_DOCKER=(bool, True),
-    LOCAL_DOCKER_SERVER_DATA_VOLUMNE_NAME=(str, "sensiml_server_data"),
+    LOCAL_DOCKER_SERVER_DATA_VOLUME_NAME=(str, "sensiml_server_data"),
     FOUNDATION_MODEL_STORE_DOMAIN=(str, "sensiml"),
     FOUNDATION_MODEL_STORE_PROJECT=(str, "sensiml"),
     ADMIN_SITE_HEADER=(str, "SensiML Account Management"),
@@ -169,7 +170,6 @@ env = environ.Env(
     NEW_ACCOUNT_URL=(str, "documentation/"),
     CODEGEN_TENSORFLOW_PLATFORM_VERSION=(str, "0a4bec2a"),
     AWS_CUSTOMER_REPORT_LOG_BUCKET=(str, "sml.customer.reports"),
-    ALLOW_UPDATE_PROJECT_SCHEMA=(bool, False),
     EMBEDDED_SDK_LICENSE=(
         str,
         """/* ----------------------------------------------------------------------
@@ -236,7 +236,8 @@ else:
     print("No environment {} found".format(os.environ.get("DJANGO_ENV")))
 
 
-LOCAL_DOCKER_SERVER_DATA_VOLUMNE_NAME = env("LOCAL_DOCKER_SERVER_DATA_VOLUMNE_NAME")
+LOCAL_DOCKER_SERVER_DATA_VOLUME_NAME = env("LOCAL_DOCKER_SERVER_DATA_VOLUME_NAME")
+SERVER_NAME = env("SERVER_NAME")
 ENVIRONMENT = env("ENVIRONMENT")
 FREE_TEAM_PK = env("FREE_TEAM_PK")
 SENSIML_LIBRARY_PACK = None
@@ -790,7 +791,6 @@ CODEGEN_TENSORFLOW_PLATFORM_VERSION = env("CODEGEN_TENSORFLOW_PLATFORM_VERSION")
 
 STARTER_CLASSIFICATION_LIMIT = env("STARTER_CLASSIFICATION_LIMIT")
 BASIC_EDITION_SAMPLE_RATE_LIMIT = env("BASIC_EDITION_SAMPLE_RATE_LIMIT")
-ALLOW_UPDATE_PROJECT_SCHEMA = env("ALLOW_UPDATE_PROJECT_SCHEMA")
 
 # Bonsai C++ library
 BONSAI = env("BONSAI")
@@ -840,6 +840,8 @@ OAUTH_CLIENT_ID = env("OAUTH_CLIENT_ID", default=None)
 OAUTH_CLIENT_SECRET = env("OAUTH_CLIENT_SECRET", default=None)
 
 ACTIVATION_CODE_AUTH = env("ACTIVATION_CODE_AUTH")
+
+OAUTH_DATA_STUDIO_CLIENT_NAME = "Data Studio"
 
 JWT = {
     # Accepted algorithms for decoder

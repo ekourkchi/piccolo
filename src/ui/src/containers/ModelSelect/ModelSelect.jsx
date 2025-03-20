@@ -43,13 +43,13 @@ const MODELS_SELECTION_MODE = {
   [ROUTES.MAIN.MODEL_SELECT.MODES.SELECT_DOWNLOAD]: "Download Model",
 };
 
-const ModelSelect = ({ selectedProject, loadKnowledgepacks, modelData }) => {
+const ModelSelect = ({ selectedProject, modelData, loadKnowledgepacks }) => {
   const routersHistory = useHistory();
   const { t } = useTranslation("models");
   const { selectionMode } = useParams();
   const { state } = useLocation();
 
-  const [isShowAlerSnackBar, setIsShowAlertSnackBar] = useState(false);
+  const [isShowAlertSnackBar, setIsShowAlertSnackBar] = useState(false);
 
   const tableOpenData = useMemo(() => {
     let res = {};
@@ -83,14 +83,14 @@ const ModelSelect = ({ selectedProject, loadKnowledgepacks, modelData }) => {
   };
 
   const getChangeModelName = () => {
-    if (modelData.name) {
+    if (modelData?.name) {
       return `Model: ${modelData.name}`;
     }
     if (state?.parentPath !== undefined) {
       return `Select model to open in ${MODELS_SELECTION_MODE[state?.parentPath.split("/")[1]]}`;
     }
 
-    return "Select Model";
+    return "Models";
   };
 
   const handleCloseAlert = () => {
@@ -114,9 +114,9 @@ const ModelSelect = ({ selectedProject, loadKnowledgepacks, modelData }) => {
           <ControlPanelSelect title={getChangeModelName()} />
         )}
       </Box>
-      {/* isShowAlerSnackBar */}
+      {/* isShowAlertSnackBar */}
       <UISnackBar
-        isOpen={isShowAlerSnackBar && state?.message}
+        isOpen={isShowAlertSnackBar && state?.message}
         onClose={handleCloseAlert}
         message={state?.message}
         variant={state?.massageVariant || "info"}

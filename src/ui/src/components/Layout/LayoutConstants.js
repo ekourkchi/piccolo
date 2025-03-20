@@ -26,6 +26,8 @@ import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import ExploreIcon from "@mui/icons-material/Explore";
+import AutoModeOutlinedIcon from "@mui/icons-material/AutoModeOutlined";
+import ModelTrainingOutlinedIcon from "@mui/icons-material/ModelTrainingOutlined";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import StorageIcon from "@mui/icons-material/Storage";
 import SummaryIcon from "@mui/icons-material/Dvr";
@@ -58,8 +60,8 @@ const MENU_ITEMS_INFO = {
     getPath: (params = {}) => generatePath(ROUTES.MAIN.HOME.path, { ...params }),
   },
   CHANGE_PROJECT: {
-    title: i18n.t("layout:nav-drawer.menu-item-change-project"),
-    tooltip: i18n.t("layout:menu-external.get-started-tooltip"),
+    title: i18n.t("layout:nav-drawer.menu-item-close-project"),
+    tooltip: i18n.t("layout:nav-drawer-tooltips.menu-item-close-project"),
     id: "navChangeProject",
     orderIndex: 1,
     iconfn: (iconProps) => <ExitToAppIcon {...iconProps} />,
@@ -67,6 +69,7 @@ const MENU_ITEMS_INFO = {
   },
   SUMMARY: {
     title: i18n.t("layout:nav-drawer.menu-item-project-summary"),
+    tooltip: i18n.t("layout:nav-drawer-tooltips.project-summary"),
     id: "navSummary",
     orderIndex: 2,
     iconfn: (iconProps) => <SummaryIcon {...iconProps} />,
@@ -74,13 +77,15 @@ const MENU_ITEMS_INFO = {
   },
   DATAMANAGER: {
     title: i18n.t("layout:nav-drawer.menu-item-data-manager"),
+    tooltip: i18n.t("layout:nav-drawer-tooltips.data-manager"),
     id: "navDataManager",
     orderIndex: 3,
     iconfn: (iconProps) => <StorageIcon {...iconProps} />,
     getPath: (params = {}) => generatePath(ROUTES.MAIN.DATA_MANAGER.path, { ...params }),
   },
-  PRERARE_DATA: {
+  PREPARE_DATA: {
     title: i18n.t("layout:nav-drawer.menu-item-queries"),
+    tooltip: i18n.t("layout:nav-drawer-tooltips.queries"),
     id: "navPrepareData",
     orderIndex: 4,
     iconfn: (iconProps) => <PollOutlinedIcon {...iconProps} />,
@@ -88,14 +93,16 @@ const MENU_ITEMS_INFO = {
   },
   BUILD_MODEL: {
     title: i18n.t("layout:nav-drawer.menu-item-build-model"),
+    tooltip: i18n.t("layout:nav-drawer-tooltips.pipelines"),
     id: "navBuildModel",
     orderIndex: 5,
     iconfn: (iconProps) => <BuildIcon {...iconProps} />,
     getPath: (params = {}) =>
       generatePath(ROUTES.MAIN.MODEL_BUILD.child.SELECT_SCREEN.path, { ...params }),
-    _subItems: [
+    subItems: [
       {
         title: i18n.t("layout:nav-drawer.menu-item-feature-extractor"),
+        tooltip: i18n.t("layout:nav-drawer-tooltips.pipeline-fe"),
         id: "navFeatureExtractor",
         orderIndex: 1,
         iconfn: (iconProps) => <FilterAltOutlinedIcon {...iconProps} />,
@@ -103,22 +110,24 @@ const MENU_ITEMS_INFO = {
           generatePath(ROUTES.MAIN.MODEL_BUILD.child.FEATURE_EXTRACTOR.path, { ...params }),
       },
       {
-        title: i18n.t("layout:nav-drawer.menu-item-pipeline-automl"),
-        id: "navPipelineAutoML",
-        orderIndex: 2,
-        iconfn: (iconProps) => <ExploreIcon {...iconProps} />,
+        title: i18n.t("layout:nav-drawer.menu-item-pipeline-custom"),
+        tooltip: i18n.t("layout:nav-drawer-tooltips.pipeline-custom"),
+        id: "navPipelineCustom",
+        orderIndex: 3,
+        iconfn: (iconProps) => <ModelTrainingOutlinedIcon {...iconProps} fontSize="medium" />,
         getPath: (params = {}) =>
-          generatePath(ROUTES.MAIN.MODEL_BUILD.child.AUTOML_BUILDER_SCREEN.path, {
+          generatePath(ROUTES.MAIN.MODEL_BUILD.child.CUSTOM.path, {
             ...params,
           }),
       },
       {
-        title: i18n.t("layout:nav-drawer.menu-item-pipeline-custom"),
-        id: "navPipelineCustom",
-        orderIndex: 3,
-        iconfn: (iconProps) => <ExploreIcon {...iconProps} />,
+        title: i18n.t("layout:nav-drawer.menu-item-pipeline-automl"),
+        tooltip: i18n.t("layout:nav-drawer-tooltips.pipeline-automl"),
+        id: "navPipelineAutoML",
+        orderIndex: 2,
+        iconfn: (iconProps) => <AutoModeOutlinedIcon {...iconProps} />,
         getPath: (params = {}) =>
-          generatePath(ROUTES.MAIN.MODEL_BUILD.child.CUSTOM_BUILDER_SCREEN.path, {
+          generatePath(ROUTES.MAIN.MODEL_BUILD.child.AUTOML.path, {
             ...params,
           }),
       },
@@ -126,6 +135,7 @@ const MENU_ITEMS_INFO = {
   },
   MODELS: {
     title: i18n.t("layout:nav-drawer.menu-item-models"),
+    tooltip: i18n.t("layout:nav-drawer-tooltips.models"),
     id: "navOpenModel",
     orderIndex: 6,
     iconfn: (iconProps) => <DataObjectOutlinedIcon {...iconProps} />,
@@ -133,6 +143,7 @@ const MENU_ITEMS_INFO = {
     subItems: [
       {
         title: i18n.t("layout:nav-drawer.menu-item-explore-model"),
+        tooltip: i18n.t("layout:nav-drawer-tooltips.explore-model"),
         id: "navExploreModel",
         orderIndex: 7,
         iconfn: (iconProps) => <ExploreIcon {...iconProps} />,
@@ -140,6 +151,7 @@ const MENU_ITEMS_INFO = {
       },
       {
         title: i18n.t("layout:nav-drawer.menu-item-test-model"),
+        tooltip: i18n.t("layout:nav-drawer-tooltips.test-model"),
         id: "navTestModel",
         orderIndex: 8,
         iconfn: (iconProps) => <PlaylistAddCheckIcon {...iconProps} />,
@@ -147,6 +159,7 @@ const MENU_ITEMS_INFO = {
       },
       {
         title: i18n.t("layout:nav-drawer.menu-item-download-model"),
+        tooltip: i18n.t("layout:nav-drawer-tooltips.download-model"),
         id: "navDownloadModel",
         orderIndex: 9,
         iconfn: (iconProps) => <CloudDownloadIcon {...iconProps} />,
@@ -161,7 +174,7 @@ const MENU_ITEMS = [
   { ...MENU_ITEMS_INFO.CHANGE_PROJECT },
   { ...MENU_ITEMS_INFO.SUMMARY },
   { ...MENU_ITEMS_INFO.DATAMANAGER },
-  { ...MENU_ITEMS_INFO.PRERARE_DATA },
+  { ...MENU_ITEMS_INFO.PREPARE_DATA },
   { ...MENU_ITEMS_INFO.BUILD_MODEL },
   { ...MENU_ITEMS_INFO.MODELS },
 ];
@@ -181,7 +194,6 @@ const MENU_ITEMS_EXTERNAL = [
     title: i18n.t("layout:menu-external.demo-title"),
     tooltip: i18n.t("layout:menu-external.demo-tooltip"),
     id: "navDemos",
-    target: "_blank",
     orderIndex: 1,
     isHidden: false,
     iconfn: (iconProps) => <DriveEtaIcon {...iconProps} />,

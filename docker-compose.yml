@@ -1,6 +1,6 @@
 services:
   db:
-    mem_limit: "250M"
+    #mem_limit: "250M"
     image: postgres
     environment:
       - POSTGRES_DB=piccolodb
@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
   redis:
-    mem_limit: "250M"
+    #mem_limit: "250M"
     image: redis
   helper:
     image: sensiml/base
@@ -18,7 +18,7 @@ services:
       - server_data:/home/sml-app/data/
       - server_libs:/home/sml-app/install/lib/
   sensiml.databse.initalize:
-    mem_limit: "2000M"
+    #mem_limit: "2000M"
     image: sensiml/base
     working_dir: /home/sml-app/install/
     user: sml-app
@@ -49,7 +49,7 @@ services:
       - helper
   sensiml.cloud:
     user: sml-app
-    mem_limit: "2000M"
+    #mem_limit: "2000M"
     image: sensiml/base
     working_dir: /home/sml-app/install/server/
     volumes:
@@ -69,15 +69,16 @@ services:
       - DJANGO_ENV_PATH=/home/sml-app/install/config/env
       - DJANGO_DEBUGGER=True
       - PORT_PTVSD=8005
-    command: python manage.py runserver 0.0.0.0:8000 --noreload
+    #command: python manage.py runserver 0.0.0.0:8000 --noreload
+    # --workers 4 
+    command:  gunicorn --bind 0.0.0.0:8000 --timeout 3600 --max-requests 250 --reload server.wsgi:application
     ports:
       - "8000:8000"
     depends_on:
       - db
       - redis
-      - sensiml.databse.initalize
   sensiml.pipelines:
-    mem_limit: "2000M"
+    #mem_limit: "2000M"
     image: sensiml/base
     working_dir: /home/sml-app/install/server/
     user: sml-app
@@ -110,7 +111,7 @@ services:
       - redis
       - sensiml.databse.initalize
   sensiml.steps:
-    mem_limit: "2000M"
+    #mem_limit: "2000M"
     image: sensiml/base
     working_dir: /home/sml-app/install/server/
     user: sml-app

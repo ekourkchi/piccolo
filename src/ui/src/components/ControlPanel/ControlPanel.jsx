@@ -18,9 +18,12 @@ License along with SensiML Piccolo AI. If not, see <https://www.gnu.org/licenses
 */
 
 import React from "react";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Grid, IconButton, Typography, Tooltip } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import makeStyles from "@mui/styles/makeStyles";
+
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { filterTruncateMiddle } from "filters";
 import { UIControlPanel } from "components/UIPanels";
@@ -51,7 +54,15 @@ const useStyles = () =>
     },
   }))();
 
-const ControlPanel = ({ title, subtitle, onClickBack, actionsBtns, turncateLenght = 0 }) => {
+const ControlPanel = ({
+  title,
+  subtitle,
+  onClickBack,
+  onShowInformation,
+  actionsBtns,
+  truncateLength = 0,
+}) => {
+  const { t } = useTranslation("components");
   const classes = useStyles();
 
   return (
@@ -69,7 +80,14 @@ const ControlPanel = ({ title, subtitle, onClickBack, actionsBtns, turncateLengh
             </IconButtonRounded>
           ) : null}
           <Typography variant={"h2"} classes={{ root: classes.titleRoot }}>
-            {title && filterTruncateMiddle(title, turncateLenght)}
+            {title && filterTruncateMiddle(title, truncateLength)}
+            {onShowInformation ? (
+              <Tooltip title={t("control-panel.tooltip-info-button")} placement="top">
+                <IconButton onClick={onShowInformation}>
+                  <InfoOutlinedIcon color="primary" />
+                </IconButton>
+              </Tooltip>
+            ) : null}
           </Typography>
           <Box alignItems="center" ml={2}>
             {subtitle}

@@ -48,6 +48,7 @@ const TheQueryCreateScreen = ({
   // actions
   addOrUpdateQuery,
   setHasUnsavedChanges,
+  onShowInformation,
 }) => {
   const { projectUUID } = useParams();
   const routersHistory = useHistory();
@@ -189,7 +190,7 @@ const TheQueryCreateScreen = ({
         <ControlPanel
           title={"Create Query"}
           onClickBack={handleCancelCreateQuery}
-          turncateLenght={35}
+          truncateLength={35}
           leftColumns={4}
           rightColumns={8}
           actionsBtns={
@@ -202,6 +203,7 @@ const TheQueryCreateScreen = ({
               icon={<ExitToAppIcon />}
             />
           }
+          onShowInformation={onShowInformation}
         />
       </Box>
       <Grid container spacing={2} justifyContent="flex-start">

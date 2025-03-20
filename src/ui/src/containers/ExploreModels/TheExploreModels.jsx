@@ -28,18 +28,17 @@ import ModelSummary from "components/ModelSummary";
 import TabPanel from "components/TabPanel";
 import NoContent from "components/ResponsiveTable/NoContent";
 import ModelControlPanel from "components/ModelControlPanel";
-
 import TheFeatureVector from "containers/ExploreModels/TheFeatureVector";
-
 import TheFeatureEmbedding from "containers/ExploreModels/TheFeatureEmbedding";
 import TheConfusionMatrix from "containers/ExploreModels/TheConfusionMatrix";
 
 import { Switch, Route, Link, Redirect, generatePath, useParams } from "react-router-dom";
 
 import { ROUTES } from "routers";
-
 import { AppLoader } from "components/UILoaders";
+import { useMainContext, useReadFileText } from "hooks";
 
+import infoFile from "i18n/locales/en/info-model-explorer.md";
 import useStyles from "./ExploreModelsStyles";
 
 function a11yProps(index) {
@@ -57,6 +56,9 @@ const ExploreModels = ({ model, selectedModel, setSelectedModel }) => {
   const [modelData, setModelData] = useState(model);
 
   const [value, setValue] = React.useState(0);
+
+  const { showInformationWindow } = useMainContext();
+  const screenInfoMd = useReadFileText(infoFile);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -80,7 +82,10 @@ const ExploreModels = ({ model, selectedModel, setSelectedModel }) => {
   return (
     <Box className={classes.box}>
       <Box mb={2}>
-        <ModelControlPanel modelData={modelData?.data || {}} />
+        <ModelControlPanel
+          onShowInformation={() => showInformationWindow("Model Explorer", screenInfoMd)}
+          modelData={modelData?.data || {}}
+        />
       </Box>
 
       <Paper elevation={0}>
@@ -185,7 +190,13 @@ const ExploreModels = ({ model, selectedModel, setSelectedModel }) => {
         </Route>
         <Route path={ROUTES.MAIN.MODEL_EXPLORE.child.FEATURE_SUMMARY.path}>
           <TabPanel value={value} index={3}>
-            {value === 3 ? <FeatureSummary model={modelData} /> : null}
+            {value === 3 ? (
+              <FeatureSummary
+                featureSummary={modelData?.data.feature_summary}
+                featureStatistics={modelData?.data?.model_results?.feature_statistics?.validation}
+                classMap={model?.data?.class_map}
+              />
+            ) : null}
           </TabPanel>
         </Route>
         <Route path={ROUTES.MAIN.MODEL_EXPLORE.child.MODEL_SUMMARY.path}>

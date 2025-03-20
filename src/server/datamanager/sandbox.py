@@ -64,7 +64,7 @@ from engine.drivers import get_selected_features
 from library.model_generators import model_generator
 from logger.data_logger import usage_log
 from logger.log_handler import LogHandler
-from pandas import DataFrame, notnull, NA
+from pandas import DataFrame, notnull, NA, concat
 from rest_framework import generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
@@ -124,7 +124,9 @@ def get_label_column_from_pipeline(sandbox):
     if len(sandbox.pipeline) > 0:
         query_step = next((x for x in sandbox.pipeline if x["type"] == "query"), None)
         if query_step is not None:
-            query_object = Query.objects.get(name=query_step["name"])
+            query_object = Query.objects.get(
+                name=query_step["name"], project=sandbox.project
+            )
             label_column = query_object.label_column
 
     return label_column
@@ -134,8 +136,25 @@ def calculate_feature_stats(feature_data, feature_table, label_column, sandbox_u
     (_ft, selected_features, selected_feature_cols) = get_selected_features(
         feature_table, sandbox_uuid
     )
-    selected_feature_cols.append(label_column)
-    print(label_column)
+
+    if len(selected_feature_cols) == 0:
+        return {}
+
+    if not isinstance(feature_data, DataFrame):
+        return {}
+
+    feature_statistics = {}
+    if label_column and label_column in feature_data.columns:
+        selected_feature_cols.append(label_column)
+        feature_statistics = model_generator.compute_feature_stats(
+            feature_data[selected_feature_cols]
+        )
+
+    feature_summary = (
+        selected_features.where(notnull(selected_features), NA)
+        .fillna("")
+        .to_dict(orient="records")
+    )
 
     return {
         "feature_statistics": model_generator.compute_feature_stats(
@@ -333,6 +352,12 @@ class SandboxCrudMixin(object):
     def sandbox_data(self, request, project_uuid):
         """Return the columns of data requested."""
 
+        def str_to_bool(value):
+            if not isinstance(value, str):
+                return value
+
+            return value.lower() == "true"
+
         sandbox = self.get_object()
         pipeline = sandbox.pipeline
         step = request.query_params.get("pipeline_step", None)
@@ -342,10 +367,29 @@ class SandboxCrudMixin(object):
         if page_index is None:
             page_index = request.data.get("page_index", 0)
 
+        sample_size = request.query_params.get("sample_size", None)
+        if sample_size is None:
+            sample_size = request.data.get("sample_size")
+
+        convert_datasegments_to_dataframe = str_to_bool(
+            request.query_params.get("convert_datasegments_to_dataframe", None)
+        )
+        if convert_datasegments_to_dataframe is None:
+            convert_datasegments_to_dataframe = request.data.get(
+                "convert_datasegments_to_dataframe", True
+            )
+
+        if not isinstance(convert_datasegments_to_dataframe, bool):
+            raise Exception(
+                "Invalid Parameter: convert_datasegments_to_dataframe must be bool"
+            )
+
         if step:
             step = int(step)
         if page_index:
             page_index = int(page_index)
+        if sample_size:
+            sample_size = int(sample_size)
 
         if step is None:
             return Response(
@@ -365,8 +409,12 @@ class SandboxCrudMixin(object):
 
         cache_manager = CacheManager(sandbox, pipeline, pipeline_id=sandbox.uuid)
 
-        data, number_of_pages = cache_manager.get_result_from_cache(
-            pipeline[step]["outputs"][0], page_index, cache_key="data"
+        data, number_of_pages = cache_manager.get_result_from_cache_with_sample_size(
+            variable_name=pipeline[step]["outputs"][0],
+            page_index=page_index,
+            sample_size=sample_size,
+            cache_key="data",
+            convert_datasegments_to_dataframe=convert_datasegments_to_dataframe,
         )
 
         if data is None:
@@ -394,11 +442,18 @@ class SandboxCrudMixin(object):
     def sandbox_features_stats(self, request, project_uuid):
         sandbox = self.get_object()
         pipeline = sandbox.pipeline
+
         step = request.query_params.get("pipeline_step", None)
         if step is None:
             step = request.data.get("pipeline_step", None)
         if step:
             step = int(step)
+
+        sample_size = request.query_params.get("sample_size")
+        if sample_size is None:
+            sample_size = request.data.get("sample_size")
+        if sample_size:
+            sample_size = int(sample_size)
 
         if step is None:
             return Response(
@@ -425,11 +480,17 @@ class SandboxCrudMixin(object):
         data_name, features_name = pipeline[step]["outputs"]
         fd_index = ft_index = 0
 
-        feature_data, data_pages = cache_manager.get_result_from_cache(
-            data_name, fd_index, cache_key="data"
+        feature_data, data_pages = cache_manager.get_result_from_cache_with_sample_size(
+            variable_name=data_name,
+            page_index=fd_index,
+            sample_size=sample_size,
+            cache_key="data",
         )
-        feature_table, ft_pages = cache_manager.get_result_from_cache(
-            features_name, ft_index, cache_key="data"
+        feature_table, ft_pages = cache_manager.get_result_from_cache_with_sample_size(
+            variable_name=features_name,
+            page_index=ft_index,
+            sample_size=sample_size,
+            cache_key="data",
         )
 
         if feature_data is None or feature_table is None:
@@ -438,17 +499,24 @@ class SandboxCrudMixin(object):
             )
 
         while fd_index < data_pages:
-            fd_item, _ = cache_manager.get_result_from_cache(
-                data_name, fd_index, cache_key="data"
+            fd_item, _ = cache_manager.get_result_from_cache_with_sample_size(
+                variable_name=data_name,
+                page_index=fd_index,
+                sample_size=sample_size,
+                cache_key="data",
             )
-            feature_data.append(fd_item)
+            sample_size
+            concat([feature_data, fd_item])
             fd_index += 1
 
         while ft_index < ft_pages:
-            ft_item, _ = cache_manager.get_result_from_cache(
-                data_name, ft_index, cache_key="data"
+            ft_item, _ = cache_manager.get_result_from_cache_with_sample_size(
+                variable_name=data_name,
+                page_index=ft_index,
+                sample_size=sample_size,
+                cache_key="data",
             )
-            feature_table.append(ft_item)
+            concat([feature_table, ft_item])
             ft_index += 1
 
         project = Project.objects.get(uuid=project_uuid)
@@ -589,6 +657,13 @@ class SandboxAsyncMixin(object):
         page_index = int(request.query_params.get("page_index", 0))
         status_report = request.query_params.get("status_only") == "True"
 
+        sample_size = request.query_params.get("sample_size")
+        if sample_size is None:
+            sample_size = request.data.get("sample_size")
+
+        if sample_size is not None:
+            sample_size = int(sample_size)
+
         number_of_pages = 0
 
         sandbox = self.get_object()
@@ -596,10 +671,10 @@ class SandboxAsyncMixin(object):
             project_uuid, sandbox_uuid
         )
 
-        # DCL expects a string or None
+        # Data Studio expects a string or None
         if (
-            request.auth.application.client_id
-            == "cEJR6P7BzASf3n8ydVpbshRj66UbMWjCjTUbqkRk"
+            hasattr(request.auth, "application")
+            and request.auth.application.name == settings.OAUTH_DATA_STUDIO_CLIENT_NAME
         ):
             detail = None
 
@@ -663,10 +738,18 @@ class SandboxAsyncMixin(object):
                 if sandbox.result_type == "pipeline":
                     result_name = "pipeline_result.{}".format(sandbox_uuid)
                     feature_name = "feature_table.{}".format(sandbox_uuid)
-                    (feature_table, _) = cache_manager.get_result_from_cache(
-                        feature_name
+                    (feature_table, _) = (
+                        cache_manager.get_result_from_cache_with_sample_size(
+                            variable_name=feature_name,
+                            sample_size=sample_size,
+                        )
                     )
-                    (feature_data, _) = cache_manager.get_result_from_cache(result_name)
+                    (feature_data, _) = (
+                        cache_manager.get_result_from_cache_with_sample_size(
+                            variable_name=result_name,
+                            sample_size=sample_size,
+                        )
+                    )
                     summary_key = "feature_table"
                     label_column = (
                         get_label_column_from_pipeline(sandbox=sandbox) or "Label"
@@ -674,6 +757,7 @@ class SandboxAsyncMixin(object):
                     statistics_summary = calculate_feature_stats(
                         feature_data, feature_table, label_column, sandbox.uuid
                     )
+                    summary = feature_data
 
                 elif sandbox.result_type == "grid_search":
                     result_name = "grid_result.{}".format(sandbox_uuid)
@@ -682,13 +766,19 @@ class SandboxAsyncMixin(object):
                 elif sandbox.result_type == "auto":
                     result_name = "auto_models.{}".format(sandbox_uuid)
                     summary_name = "auto_extra.{}".format(sandbox_uuid)
-                    (summary, _) = cache_manager.get_result_from_cache(summary_name)
+                    (summary, _) = cache_manager.get_result_from_cache_with_sample_size(
+                        variable_name=summary_name,
+                        sample_size=sample_size,
+                    )
                     summary_key = "fitness_summary"
 
                 elif sandbox.result_type == "autosegment_search":
                     result_name = "autosegmentation_result.{}".format(sandbox_uuid)
                     summary_name = "auto_segment_summary.{}".format(sandbox_uuid)
-                    (summary, _) = cache_manager.get_result_from_cache(summary_name)
+                    (summary, _) = cache_manager.get_result_from_cache_with_sample_size(
+                        variable_name=summary_name,
+                        sample_size=sample_size,
+                    )
                     summary_key = "segment_summary"
 
                 else:
@@ -705,8 +795,12 @@ class SandboxAsyncMixin(object):
                     }
                 )
 
-            (data, number_of_pages) = cache_manager.get_result_from_cache(
-                result_name, page_index
+            (data, number_of_pages) = (
+                cache_manager.get_result_from_cache_with_sample_size(
+                    variable_name=result_name,
+                    sample_size=sample_size,
+                    page_index=page_index,
+                )
             )
 
             if data is None:
@@ -1021,10 +1115,10 @@ class SandboxFeatureStatsView(SandboxCrudMixin, generics.GenericAPIView):
     get=extend_schema(
         summary="Retrieve sandbox status or results if completed",
         description="""
-Retrieve sandbox status or results if completed
-    * Optional querystring field: `execution_type` should be either `pipeline` or `grid_search`
-    * Optional querystring field: `page_index` should be the page desired if the result is multi-page
-""",
+        Retrieve sandbox status or results if completed
+            * Optional querystring field: `execution_type` should be either `pipeline` or `grid_search`
+            * Optional querystring field: `page_index` should be the page desired if the result is multi-page
+        """,
     ),
     post=extend_schema(
         summary="Submit a request to execute the pipeline stored in the sandbox",

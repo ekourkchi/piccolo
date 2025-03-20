@@ -27,7 +27,7 @@ import { useHistory, generatePath, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Box, Typography } from "@mui/material";
 import { ROUTES } from "routers";
-import { useWindowResize } from "hooks";
+import { useWindowResize, useMainContext, useReadFileText } from "hooks";
 import { RESPONSIVE } from "consts";
 import { UIButtonConvertibleToShort } from "components/UIButtons";
 
@@ -40,8 +40,10 @@ import PipelineTemplateCreateForm from "components/PipelineTemplateCreateForm";
 
 import { DEFAULT_CLASSIFIER, PIPELINE_STEP_TYPES } from "store/autoML/const";
 
+import infoFile from "i18n/locales/en/info-pipelines.md";
+
 import useStyles from "../BuildModeStyle";
-import SelectCard from "../componets/SelectCard";
+import SelectCard from "../components/SelectCard";
 
 const TheSelectScreen = ({
   selectedProject,
@@ -72,6 +74,9 @@ const TheSelectScreen = ({
   const [queryInputData, setQueryInputData] = useState(true);
 
   const [isShortBtnText, setIsShortBtnText] = useState(false);
+
+  const { showInformationWindow } = useMainContext();
+  const screenInfoMd = useReadFileText(infoFile);
 
   useWindowResize((data) => {
     setIsShortBtnText(data.innerWidth < RESPONSIVE.WIDTH_FOR_SHORT_TEXT);
@@ -153,8 +158,14 @@ const TheSelectScreen = ({
 
     setIsOpenImportPipeline(false);
 
+    let pathToRedirect = ROUTES.MAIN.MODEL_BUILD.child.AUTOML.path;
+
+    if (!isAutoMLOptimization) {
+      pathToRedirect = ROUTES.MAIN.MODEL_BUILD.child.CUSTOM.path;
+    }
+
     routersHistory.push({
-      pathname: generatePath(ROUTES.MAIN.MODEL_BUILD.child.AUTOML_BUILDER_SCREEN.path, {
+      pathname: generatePath(pathToRedirect, {
         projectUUID,
         pipelineUUID: response.details,
       }),
@@ -214,7 +225,7 @@ const TheSelectScreen = ({
     <Box className={classes.root}>
       <Box mb={2}>
         <ControlPanel
-          title={"Build Model 1"}
+          title={t("model-builder-select.panel-title")}
           actionsBtns={
             <>
               <UIButtonConvertibleToShort
@@ -237,9 +248,13 @@ const TheSelectScreen = ({
               />
             </>
           }
+          onShowInformation={() => showInformationWindow("Pipelines", screenInfoMd)}
         />
       </Box>
-      <Box mb={2} spacing={2} className={classes.selectCardGridWrapper}>
+      <Box mb={2}>
+        <PipelinesTable />
+      </Box>
+      <Box spacing={2} className={classes.selectCardGridWrapper}>
         <SelectCard
           header={t("model-builder-select.create-dialog-header")}
           btnText={t("model-builder-select.create-dialog-header")}
@@ -310,7 +325,6 @@ const TheSelectScreen = ({
           onSubmit={handleBuildNewPipeline}
         />
       </DialogInformation>
-      <PipelinesTable />
     </Box>
   );
 };

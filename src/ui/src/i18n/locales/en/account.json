@@ -13,14 +13,14 @@
     "description": "Manage your account subscriptions",
     "plan-header": "Current Plan",
     "plan-btn": "Manage Subscription",
-    "credits-plan-title": "Included Clould Resources",
+    "credits-plan-title": "Included Cloud Resources",
     "credits-plan-description": "Default cloud resources in your subscription",
     "credits-purchased-title": "Purchased Cloud Resources",
     "credits-purchased-description": "Additional cloud resources that you purchased"
   },
   "account-api-keys": {
     "title": "API Keys",
-    "description": "API Keys allow authenticating a python SDK accessing the cloud resources",
+    "description": "API Keys allow authenticating a Python SDK accessing cloud resources",
     "header": "API Keys",
     "create-btn": "Generate API Key",
     "create-title": "Create API Key"

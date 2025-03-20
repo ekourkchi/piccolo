@@ -22,6 +22,7 @@ export default [
     name: "Pipeline Settings",
     customName: "Pipeline Settings",
     data: {
+      reset: true,
       disable_automl: true,
       "prediction_target(%)": { f1_score: 100 },
       hardware_target: { classifiers_sram: 32000 },
@@ -60,7 +61,6 @@ export default [
       group_columns: ["segment_uuid", "Type", "Subject", "Punch"],
       window_size: 250,
       delta: 250,
-      is_use_train_delta: false,
       train_delta: 0,
       return_segment_index: false,
       transform: "Windowing",
